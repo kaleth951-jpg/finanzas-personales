@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiskal - Dashboard de Finanzas Personales & Analítica</title>
+    <meta name="description"
+        content="Fiskal - Aplicación web de gestión de finanzas personales con dashboard analítico, predicción de gastos con Machine Learning y detección de anomalías por Z-score.">
+
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Barra de Navegación Superior -->
+        <header class="top-navbar">
+            <div class="brand-container">
+                <div class="brand-logo">
+                    <i data-lucide="wallet-cards" class="logo-icon"></i>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">Fis<span>kal</span> <span class="badge-ai">AI</span></h1>
+                    <p class="brand-subtitle">Smart Finance & Analytics Engine</p>
+                </div>
+            </div>
+
+            <div class="navbar-actions">
+                <!-- Perfil del Usuario Autenticado -->
+                <div class="user-profile-nav" id="navUserProfile">
+                    <div class="user-avatar" id="navUserAvatar">?</div>
+                    <div class="user-info-block">
+                        <span class="user-display-name" id="navUserName">Usuario</span>
+                        <span class="user-display-email" id="navUserEmail">correo@ejemplo.com</span>
+                    </div>
+                </div>
+
+                <!-- Selector de Período Mes/Año -->
+                <div class="month-selector-wrapper">
+                    <i data-lucide="calendar" class="selector-icon"></i>
+                    <input type="month" id="monthSelector" class="form-input month-input"
+                        title="Seleccionar Mes de Consulta">
+                </div>
+
+                <!-- Botón Acción Principal: Registrar Movimiento -->
+                <button id="btnOpenNewMovement" class="btn btn-primary">
+                    <i data-lucide="plus-circle"></i>
+                    <span>Nuevo Movimiento</span>
+                </button>
+
+                <!-- Botón Nueva Categoría -->
+                <button id="btnOpenNewCategory" class="btn btn-secondary" title="Crear Nueva Categoría">
+                    <i data-lucide="tag"></i>
+                    <span>Categoría</span>
+                </button>
+
+                <!-- Botón Cerrar Sesión -->
+                <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">
+                    <i data-lucide="log-out"></i>
+                    <span>Salir</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <!-- 1. Tarjetas de Resumen KPI -->
+            <section class="kpi-grid" aria-label="Tarjetas Resumen">
+                <!-- KPI 1: Ingresos -->
+                <div class="kpi-card card-income">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Ingresos del Mes</span>
+                        <div class="kpi-icon-wrapper income-bg">
+                            <i data-lucide="trending-up" class="kpi-icon"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 id="kpiIncomeValue" class="kpi-value">$0.00</h2>
+                        <div id="kpiIncomeDiff" class="kpi-trend trend-neutral">
+                            <i data-lucide="minus" class="trend-icon"></i>
+                            <span>0% vs mes anterior</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Gastos -->
+                <div class="kpi-card card-expense">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Gastos del Mes</span>
+                        <div class="kpi-icon-wrapper expense-bg">
+                            <i data-lucide="trending-down" class="kpi-icon"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 id="kpiExpenseValue" class="kpi-value">$0.00</h2>
+                        <div id="kpiExpenseDiff" class="kpi-trend trend-neutral">
+                            <i data-lucide="minus" class="trend-icon"></i>
+                            <span>0% vs mes anterior</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Balance Neto & Ahorro -->
+                <div class="kpi-card card-balance">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Balance Neto</span>
+                        <div class="kpi-icon-wrapper balance-bg">
+                            <i data-lucide="scale" class="kpi-icon"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 id="kpiBalanceValue" class="kpi-value">$0.00</h2>
+                        <div class="kpi-trend">
+                            <span id="kpiSavingsRate" class="badge badge-savings">Ahorro: 0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Predicción ML Próximo Mes -->
+                <div class="kpi-card card-prediction">
+                    <div class="kpi-header">
+                        <div class="kpi-title-ai">
+                            <span class="kpi-title">Predicción Próx. Mes</span>
+                            <span class="badge-ai-pill">Scikit-Learn</span>
+                        </div>
+                        <div class="kpi-icon-wrapper ai-bg">
+                            <i data-lucide="sparkles" class="kpi-icon"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 id="kpiPredictionValue" class="kpi-value">$0.00</h2>
+                        <div id="kpiPredictionTrend" class="kpi-trend trend-ai">
+                            <i data-lucide="cpu" class="trend-icon"></i>
+                            <span id="kpiPredictionText">Analizando histórico...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Alertas Visuales de Detección de Anomalías (Z-Score) -->
+            <section id="anomaliesSection" class="anomalies-section hidden" aria-label="Alertas de Anomalías">
+                <div class="section-banner-anomaly">
+                    <div class="anomaly-banner-header">
+                        <div class="banner-title-group">
+                            <div class="pulse-indicator"></div>
+                            <i data-lucide="shield-alert" class="banner-icon"></i>
+                            <h3>Detección de Anomalías Estadísticas <span class="badge-zscore">(Z-Score ≥ 2.0σ)</span>
+                            </h3>
+                        </div>
+                        <span id="anomalyCounterBadge" class="badge badge-danger">0 detectadas</span>
+                    </div>
+                    <p class="banner-desc">
+                        El motor analítico identificó transacciones con montos desproporcionados respecto a la media de
+                        su categoría.
+                    </p>
+                    <div id="anomaliesList" class="anomalies-grid">
+                        <!-- Render dinámico desde main.js -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Sección de Gráficos Analíticos (Chart.js) -->
+            <section class="charts-grid" aria-label="Visualizaciones Gráficas">
+                <!-- Gráfico 1: Dona de Gastos por Categoría -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <i data-lucide="pie-chart" class="section-icon"></i>
+                            <h3>Distribución de Gastos</h3>
+                        </div>
+                        <span id="categoryChartSubtitle" class="chart-subtitle">Mes en curso</span>
+                    </div>
+                    <div class="chart-wrapper doughnut-wrapper">
+                        <canvas id="categoryDoughnutChart"></canvas>
+                        <div id="doughnutCenterText" class="doughnut-center-info">
+                            <span class="doughnut-label">Total Gasto</span>
+                            <span id="doughnutTotalAmount" class="doughnut-amount">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico 2: Tendencia Histórica Ingresos vs Gastos -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <i data-lucide="line-chart" class="section-icon"></i>
+                            <h3>Tendencia Histórica (Ingresos vs. Gastos)</h3>
+                        </div>
+                        <span class="chart-subtitle">Progresión mensual y balance</span>
+                    </div>
+                    <div class="chart-wrapper line-wrapper">
+                        <canvas id="monthlyTrendChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Tabla y Gestión de Movimientos -->
+            <section class="movements-section" aria-label="Listado de Transacciones">
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <div class="toolbar-left">
+                            <div class="table-title-group">
+                                <i data-lucide="list" class="section-icon"></i>
+                                <h3>Historial de Movimientos</h3>
+                            </div>
+                            <span id="movementsCounter" class="badge badge-neutral">0 registros</span>
+                        </div>
+
+                        <div class="toolbar-right">
+                            <!-- Buscador de texto -->
+                            <div class="search-input-wrapper">
+                                <i data-lucide="search" class="search-icon"></i>
+                                <input type="text" id="tableSearchInput" class="form-input search-input"
+                                    placeholder="Buscar por descripción o categoría...">
+                            </div>
+
+                            <!-- Filtro de Tipo -->
+                            <div class="type-filter-group">
+                                <button class="filter-pill active" data-type="all">Todos</button>
+                                <button class="filter-pill" data-type="ingreso">Ingresos</button>
+                                <button class="filter-pill" data-type="gasto">Gastos</button>
+                            </div>
+
+                            <!-- Filtro de Categoría -->
+                            <select id="categoryFilter" class="form-select filter-select">
+                                <option value="">Todas las Categorías</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabla Responsiva -->
+                    <div class="table-responsive">
+                        <table class="data-table" id="movementsTable">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría</th>
+                                    <th>Método de Pago</th>
+                                    <th class="text-right">Monto</th>
+                                    <th class="text-center">Estado / IA</th>
+                                    <th class="text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movementsTableBody">
+                                <!-- Filas dinámicas -->
+                                <tr>
+                                    <td colspan="7" class="text-center py-6 text-muted">
+                                        <i data-lucide="loader-2" class="spin-icon"></i> Cargando transacciones...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Fiskal AI &copy; 2024 - 2026 &bull; Arquitectura 3FN MySQL + Flask REST API + Scikit-Learn Engine</p>
+        </footer>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODALES INTERACTIVOS -->
+    <!-- ===================================================================== -->
+
+    <!-- Modal 1: Crear / Editar Movimiento -->
+    <div id="modalMovement" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="modalMovementTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i data-lucide="receipt" class="modal-icon"></i>
+                    <h3 id="modalMovementTitle">Registrar Movimiento</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseMovementModal"
+                    aria-label="Cerrar modal">&times;</button>
+            </div>
+
+            <form id="formMovement" class="modal-form" novalidate>
+                <input type="hidden" id="movId">
+
+                <!-- Switch Tipo (Ingreso / Gasto) -->
+                <div class="form-group">
+                    <label class="form-label">Tipo de Transacción</label>
+                    <div class="type-radio-toggle">
+                        <label class="radio-label">
+                            <input type="radio" name="movTipo" value="gasto" id="typeGasto" checked>
+                            <span class="toggle-btn toggle-gasto">
+                                <i data-lucide="arrow-down-circle"></i> Gasto
+                            </span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="movTipo" value="ingreso" id="typeIngreso">
+                            <span class="toggle-btn toggle-ingreso">
+                                <i data-lucide="arrow-up-circle"></i> Ingreso
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Categoría -->
+                    <div class="form-group flex-1">
+                        <label for="movCategoria" class="form-label">Categoría <span class="required">*</span></label>
+                        <select id="movCategoria" class="form-select" required>
+                            <option value="" disabled selected>Seleccione una categoría</option>
+                        </select>
+                    </div>
+
+                    <!-- Monto -->
+                    <div class="form-group flex-1">
+                        <label for="movMonto" class="form-label">Monto ($) <span class="required">*</span></label>
+                        <input type="number" id="movMonto" class="form-input" placeholder="0.00" step="0.01" min="0.01"
+                            required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Fecha -->
+                    <div class="form-group flex-1">
+                        <label for="movFecha" class="form-label">Fecha <span class="required">*</span></label>
+                        <input type="date" id="movFecha" class="form-input" required>
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div class="form-group flex-1">
+                        <label for="movMetodoPago" class="form-label">Método de Pago</label>
+                        <select id="movMetodoPago" class="form-select">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta_debito">Tarjeta de Débito</option>
+                            <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                            <option value="transferencia">Transferencia Bancaria</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="form-group">
+                    <label for="movDescripcion" class="form-label">Descripción o Concepto <span
+                            class="required">*</span></label>
+                    <input type="text" id="movDescripcion" class="form-input"
+                        placeholder="Ej. Mercado quincenal, Salario..." maxlength="250" required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnCancelMovement">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveMovement">
+                        <i data-lucide="save"></i>
+                        <span id="btnSaveMovementText">Guardar Movimiento</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Crear Nueva Categoría -->
+    <div id="modalCategory" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i data-lucide="folder-plus" class="modal-icon"></i>
+                    <h3>Nueva Categoría</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseCategoryModal">&times;</button>
+            </div>
+
+            <form id="formCategory" class="modal-form" novalidate>
+                <div class="form-group">
+                    <label for="catNombre" class="form-label">Nombre de Categoría <span
+                            class="required">*</span></label>
+                    <input type="text" id="catNombre" class="form-input" placeholder="Ej. Suscripciones, Gimnasio..."
+                        required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="catTipo" class="form-label">Tipo</label>
+                        <select id="catTipo" class="form-select">
+                            <option value="gasto">Gasto</option>
+                            <option value="ingreso">Ingreso</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group flex-1">
+                        <label for="catColor" class="form-label">Color de Distintivo</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="catColor" class="form-input-color" value="#6366f1">
+                            <span id="colorHexLabel">#6366f1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnCancelCategory">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="check"></i> Guardar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Crear Nuevo Usuario -->
+    <div id="modalUser" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i data-lucide="user-plus" class="modal-icon"></i>
+                    <h3>Crear Nuevo Usuario</h3>
+                </div>
+                <button type="button" class="btn-close-modal" id="btnCloseUserModal">&times;</button>
+            </div>
+
+            <form id="formUser" class="modal-form" novalidate>
+                <div class="form-group">
+                    <label for="userName" class="form-label">Nombre Completo <span class="required">*</span></label>
+                    <input type="text" id="userName" class="form-input" placeholder="Ej. Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmail" class="form-label">Correo Electrónico <span class="required">*</span></label>
+                    <input type="email" id="userEmail" class="form-input" placeholder="juan@ejemplo.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="userCurrency" class="form-label">Moneda Principal</label>
+                    <select id="userCurrency" class="form-select">
+                        <option value="USD">USD ($ - Dólar Estadounidense)</option>
+                        <option value="EUR">EUR (€ - Euro)</option>
+                        <option value="COP">COP ($ - Peso Colombiano)</option>
+                        <option value="MXN">MXN ($ - Peso Mexicano)</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnCancelUser">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="user-check"></i> Crear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- OVERLAY DE AUTENTICACIÓN (Login / Registro) -->
+    <!-- ================================================================== -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <!-- Header con Logo -->
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i data-lucide="wallet-cards"></i>
+                </div>
+                <h2>Fis<span>kal</span> AI</h2>
+                <p>Gestión Inteligente de Finanzas Personales</p>
+            </div>
+
+            <!-- Tabs de Login / Registro -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab-btn active" id="tabLogin" data-tab="login">Iniciar Sesión</button>
+                <button type="button" class="auth-tab-btn" id="tabRegister" data-tab="register">Crear Cuenta</button>
+            </div>
+
+            <!-- Panel LOGIN -->
+            <div class="auth-form-panel active" id="panelLogin">
+                <form id="formLogin" novalidate>
+                    <!-- Mensaje de error -->
+                    <div class="auth-error-msg" id="loginError">
+                        <i data-lucide="alert-circle"></i>
+                        <span id="loginErrorText">Error</span>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label for="loginEmail">Correo Electrónico</label>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="email" id="loginEmail" placeholder="tu@correo.com" required
+                                autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label for="loginPassword">Contraseña</label>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="lock" class="input-icon"></i>
+                            <input type="password" id="loginPassword" placeholder="••••••••" required
+                                autocomplete="current-password">
+                            <button type="button" class="btn-toggle-pw" data-target="loginPassword"
+                                title="Mostrar contraseña">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-auth-submit" id="btnLogin">
+                        <i data-lucide="log-in"></i>
+                        Iniciar Sesión
+                    </button>
+
+
+                </form>
+            </div>
+
+            <!-- Panel REGISTRO -->
+            <div class="auth-form-panel" id="panelRegister">
+                <form id="formRegister" novalidate>
+                    <!-- Mensaje de error -->
+                    <div class="auth-error-msg" id="registerError">
+                        <i data-lucide="alert-circle"></i>
+                        <span id="registerErrorText">Error</span>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label for="regName">Nombre Completo</label>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <input type="text" id="regName" placeholder="Ej. Juan Pérez" required autocomplete="name">
+                        </div>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label for="regEmail">Correo Electrónico</label>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="email" id="regEmail" placeholder="tu@correo.com" required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label for="regPassword">Contraseña</label>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="lock" class="input-icon"></i>
+                            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required
+                                autocomplete="new-password">
+                            <button type="button" class="btn-toggle-pw" data-target="regPassword"
+                                title="Mostrar contraseña">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="regPasswordStrength"></div>
+                        </div>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label for="regCurrency">Moneda Principal</label>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="coins" class="input-icon"></i>
+                            <select id="regCurrency">
+                                <option value="USD">USD ($) - Dólar Estadounidense</option>
+                                <option value="EUR">EUR (€) - Euro</option>
+                                <option value="COP">COP ($) - Peso Colombiano</option>
+                                <option value="MXN">MXN ($) - Peso Mexicano</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-auth-submit" id="btnRegister">
+                        <i data-lucide="user-plus"></i>
+                        Crear Mi Cuenta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de Alertas Flotantes Toast -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Scripts de la Aplicación -->
+    <script src="js/charts.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
