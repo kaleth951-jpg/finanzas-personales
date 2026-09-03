@@ -147,16 +147,6 @@ const DemoMode = {
                 moneda: payload.moneda || 'USD'
             };
             store.usuarios.push(newUser);
-
-            // Agregar 2 movimientos iniciales de bienvenida en el mes actual
-            const now = new Date();
-            const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            const baseId = Date.now();
-            store.movimientos.push(
-                { id_movimiento: baseId + 1, id_usuario: newId, id_categoria: 1, monto: 2800, tipo: 'ingreso', fecha: `${ym}-01`, descripcion: 'Ingreso Inicial de Bienvenida', metodo_pago: 'transferencia' },
-                { id_movimiento: baseId + 2, id_usuario: newId, id_categoria: 5, monto: 350, tipo: 'gasto', fecha: `${ym}-05`, descripcion: 'Supermercado Inicial', metodo_pago: 'tarjeta_debito' }
-            );
-
             this.saveData(store);
             return {
                 status: 'success',
