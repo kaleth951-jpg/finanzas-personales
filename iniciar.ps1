@@ -7,8 +7,15 @@ Write-Host " 💰 Fiskal - Servidor de Finanzas Personales & Machine Learning" -
 Write-Host "==============================================================================" -ForegroundColor Cyan
 Write-Host ""
 
-$pythonCmd = "python"
-if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
+$pythonCmd = $null
+try {
+    $test = & python -c "import sys" 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        $pythonCmd = "python"
+    }
+} catch {}
+
+if (-not $pythonCmd) {
     if (Test-Path "C:\laragon\bin\python\python-3.13\python.exe") {
         $pythonCmd = "C:\laragon\bin\python\python-3.13\python.exe"
     } elseif (Test-Path "$env:LOCALAPPDATA\Programs\Python\Python313\python.exe") {
@@ -17,6 +24,12 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
         $pythonCmd = "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe"
     } elseif (Test-Path "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe") {
         $pythonCmd = "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe"
+    } elseif (Test-Path "C:\Program Files\Python313\python.exe") {
+        $pythonCmd = "C:\Program Files\Python313\python.exe"
+    } elseif (Test-Path "C:\Program Files\Python312\python.exe") {
+        $pythonCmd = "C:\Program Files\Python312\python.exe"
+    } else {
+        $pythonCmd = "python"
     }
 }
 

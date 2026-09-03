@@ -26,6 +26,13 @@
 </head>
 
 <body>
+    <!-- Banner informativo de Modo Demo -->
+    <div id="demoModeBanner" class="demo-banner hidden">
+        <i data-lucide="sparkles"></i>
+        <span><strong>Modo Demostración Activo</strong>: Datos locales en el navegador. Para usar MySQL/SQLite y Python ML, ejecuta <code>iniciar.bat</code> en tu PC.</span>
+        <button type="button" class="btn-exit-demo" id="btnExitDemo">Conectar Servidor</button>
+    </div>
+
     <div class="app-layout">
         <!-- Barra de Navegación Superior -->
         <header class="top-navbar">
@@ -580,6 +587,15 @@
                     </button>
                 </form>
             </div>
+
+            <!-- Acceso Rápido / Modo Demo -->
+            <div class="auth-demo-divider">
+                <span>¿Solo deseas explorar o estás en GitHub Pages?</span>
+            </div>
+            <button type="button" class="btn-demo-mode" id="btnEnterDemoMode">
+                <i data-lucide="sparkles"></i>
+                <span>Explorar en Modo Demostración (Sin Servidor)</span>
+            </button>
         </div>
     </div>
 

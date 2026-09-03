@@ -22,15 +22,402 @@ const AppState = {
 };
 
 // ==============================================================================
-// 1. CLIENTE DE SERVICIOS API (Endpoints REST)
+// 1. MODO DEMOSTRACIÓN / ALMACENAMIENTO LOCAL (GitHub Pages & Offline)
+// ==============================================================================
+const DemoMode = {
+    KEY_ACTIVE: 'fiskal_demo_active',
+    KEY_DATA: 'fiskal_demo_store',
+
+    get isActive() {
+        return localStorage.getItem(this.KEY_ACTIVE) === 'true' || window.location.hostname.includes('github.io');
+    },
+
+    activate() {
+        localStorage.setItem(this.KEY_ACTIVE, 'true');
+        this.ensureInitialData();
+        const banner = document.getElementById('demoModeBanner');
+        if (banner) banner.classList.remove('hidden');
+    },
+
+    deactivate() {
+        localStorage.removeItem(this.KEY_ACTIVE);
+        const banner = document.getElementById('demoModeBanner');
+        if (banner) banner.classList.add('hidden');
+    },
+
+    ensureInitialData() {
+        if (!localStorage.getItem(this.KEY_DATA)) {
+            const initialData = {
+                usuarios: [
+                    { id_usuario: 1, nombre: 'Kaleth García', email: 'kaleth@example.com', password: 'demo', moneda: 'USD' }
+                ],
+                categorias: [
+                    { id_categoria: 1, id_usuario: null, nombre: 'Salario Principal', tipo: 'ingreso', icono: 'briefcase', color: '#10b981' },
+                    { id_categoria: 2, id_usuario: null, nombre: 'Freelance & Consultoría', tipo: 'ingreso', icono: 'laptop', color: '#06b6d4' },
+                    { id_categoria: 3, id_usuario: null, nombre: 'Inversiones & Dividendos', tipo: 'ingreso', icono: 'trending-up', color: '#8b5cf6' },
+                    { id_categoria: 4, id_usuario: null, nombre: 'Otros Ingresos', tipo: 'ingreso', icono: 'plus-circle', color: '#14b8a6' },
+                    { id_categoria: 5, id_usuario: null, nombre: 'Alimentación & Supermercado', tipo: 'gasto', icono: 'shopping-cart', color: '#f59e0b' },
+                    { id_categoria: 6, id_usuario: null, nombre: 'Vivienda & Servicios', tipo: 'gasto', icono: 'home', color: '#3b82f6' },
+                    { id_categoria: 7, id_usuario: null, nombre: 'Transporte & Combustible', tipo: 'gasto', icono: 'car', color: '#6366f1' },
+                    { id_categoria: 8, id_usuario: null, nombre: 'Ocio & Entretenimiento', tipo: 'gasto', icono: 'film', color: '#ec4899' },
+                    { id_categoria: 9, id_usuario: null, nombre: 'Salud & Medicamentos', tipo: 'gasto', icono: 'heart-pulse', color: '#ef4444' },
+                    { id_categoria: 10, id_usuario: null, nombre: 'Educación & Cursos', tipo: 'gasto', icono: 'book-open', color: '#84cc16' },
+                    { id_categoria: 11, id_usuario: null, nombre: 'Tecnología & Gadgets', tipo: 'gasto', icono: 'cpu', color: '#a855f7' }
+                ],
+                movimientos: [
+                    { id_movimiento: 1, id_usuario: 1, id_categoria: 1, monto: 3200, tipo: 'ingreso', fecha: '2024-01-02', descripcion: 'Nómina mensual', metodo_pago: 'transferencia' },
+                    { id_movimiento: 2, id_usuario: 1, id_categoria: 6, monto: 765, tipo: 'gasto', fecha: '2024-01-05', descripcion: 'Arriendo y servicios', metodo_pago: 'transferencia' },
+                    { id_movimiento: 3, id_usuario: 1, id_categoria: 5, monto: 410, tipo: 'gasto', fecha: '2024-01-09', descripcion: 'Supermercado', metodo_pago: 'tarjeta_debito' },
+                    { id_movimiento: 4, id_usuario: 1, id_categoria: 8, monto: 2850, tipo: 'gasto', fecha: '2024-01-20', descripcion: 'Crucero VIP todo incluido (Gasto Anómalo)', metodo_pago: 'tarjeta_credito' },
+                    { id_movimiento: 5, id_usuario: 1, id_categoria: 1, monto: 3200, tipo: 'ingreso', fecha: '2024-02-02', descripcion: 'Nómina mensual Febrero', metodo_pago: 'transferencia' },
+                    { id_movimiento: 6, id_usuario: 1, id_categoria: 6, monto: 765, tipo: 'gasto', fecha: '2024-02-05', descripcion: 'Arriendo', metodo_pago: 'transferencia' },
+                    { id_movimiento: 7, id_usuario: 1, id_categoria: 5, monto: 430, tipo: 'gasto', fecha: '2024-02-12', descripcion: 'Mercado del mes', metodo_pago: 'tarjeta_debito' },
+                    { id_movimiento: 8, id_usuario: 1, id_categoria: 8, monto: 95, tipo: 'gasto', fecha: '2024-02-18', descripcion: 'Salida a cine y cena', metodo_pago: 'tarjeta_credito' },
+                    { id_movimiento: 9, id_usuario: 1, id_categoria: 1, monto: 3200, tipo: 'ingreso', fecha: '2024-03-02', descripcion: 'Nómina mensual Marzo', metodo_pago: 'transferencia' },
+                    { id_movimiento: 10, id_usuario: 1, id_categoria: 6, monto: 770, tipo: 'gasto', fecha: '2024-03-05', descripcion: 'Arriendo y servicios', metodo_pago: 'transferencia' },
+                    { id_movimiento: 11, id_usuario: 1, id_categoria: 5, monto: 450, tipo: 'gasto', fecha: '2024-03-15', descripcion: 'Supermercado quincenal', metodo_pago: 'tarjeta_debito' },
+                    { id_movimiento: 12, id_usuario: 1, id_categoria: 7, monto: 120, tipo: 'gasto', fecha: '2024-03-20', descripcion: 'Gasolina vehículo', metodo_pago: 'efectivo' },
+                    { id_movimiento: 13, id_usuario: 1, id_categoria: 1, monto: 3200, tipo: 'ingreso', fecha: '2024-04-02', descripcion: 'Nómina mensual Abril', metodo_pago: 'transferencia' },
+                    { id_movimiento: 14, id_usuario: 1, id_categoria: 6, monto: 780, tipo: 'gasto', fecha: '2024-04-05', descripcion: 'Arriendo y servicios', metodo_pago: 'transferencia' },
+                    { id_movimiento: 15, id_usuario: 1, id_categoria: 5, monto: 420, tipo: 'gasto', fecha: '2024-04-14', descripcion: 'Compras del hogar', metodo_pago: 'tarjeta_debito' },
+                    { id_movimiento: 16, id_usuario: 1, id_categoria: 8, monto: 85, tipo: 'gasto', fecha: '2024-04-22', descripcion: 'Cena restaurante', metodo_pago: 'tarjeta_credito' }
+                ]
+            };
+
+            const now = new Date();
+            const currY = now.getFullYear();
+            const currM = String(now.getMonth() + 1).padStart(2, '0');
+            const ym = `${currY}-${currM}`;
+            initialData.movimientos.push(
+                { id_movimiento: 17, id_usuario: 1, id_categoria: 1, monto: 3400, tipo: 'ingreso', fecha: `${ym}-02`, descripcion: 'Nómina mensual', metodo_pago: 'transferencia' },
+                { id_movimiento: 18, id_usuario: 1, id_categoria: 6, monto: 750, tipo: 'gasto', fecha: `${ym}-05`, descripcion: 'Alquiler mensual', metodo_pago: 'transferencia' },
+                { id_movimiento: 19, id_usuario: 1, id_categoria: 5, monto: 380, tipo: 'gasto', fecha: `${ym}-10`, descripcion: 'Supermercado', metodo_pago: 'tarjeta_debito' },
+                { id_movimiento: 20, id_usuario: 1, id_categoria: 7, monto: 95, tipo: 'gasto', fecha: `${ym}-12`, descripcion: 'Combustible', metodo_pago: 'efectivo' }
+            );
+
+            localStorage.setItem(this.KEY_DATA, JSON.stringify(initialData));
+        }
+    },
+
+    getData() {
+        this.ensureInitialData();
+        try {
+            return JSON.parse(localStorage.getItem(this.KEY_DATA));
+        } catch (e) {
+            this.ensureInitialData();
+            return JSON.parse(localStorage.getItem(this.KEY_DATA));
+        }
+    },
+
+    saveData(data) {
+        localStorage.setItem(this.KEY_DATA, JSON.stringify(data));
+    },
+
+    async handleRequest(endpoint, options = {}) {
+        await new Promise(r => setTimeout(r, 80));
+        const url = new URL(endpoint, 'http://localhost');
+        const path = url.pathname;
+        const method = (options.method || 'GET').toUpperCase();
+        const payload = options.body ? JSON.parse(options.body) : {};
+        const store = this.getData();
+
+        if (path === '/api/auth/login' && method === 'POST') {
+            const user = store.usuarios.find(u => u.email.toLowerCase() === payload.email.toLowerCase()) || {
+                id_usuario: 1,
+                nombre: payload.email.split('@')[0],
+                email: payload.email,
+                moneda: 'USD'
+            };
+            return {
+                status: 'success',
+                message: '¡Bienvenido en Modo Demostración!',
+                data: {
+                    usuario: user,
+                    token: 'demo-token-' + Date.now()
+                }
+            };
+        }
+
+        if (path === '/api/auth/register' && method === 'POST') {
+            const newId = store.usuarios.length + 1;
+            const newUser = {
+                id_usuario: newId,
+                nombre: payload.nombre,
+                email: payload.email,
+                moneda: payload.moneda || 'USD'
+            };
+            store.usuarios.push(newUser);
+
+            // Agregar 2 movimientos iniciales de bienvenida en el mes actual
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const baseId = Date.now();
+            store.movimientos.push(
+                { id_movimiento: baseId + 1, id_usuario: newId, id_categoria: 1, monto: 2800, tipo: 'ingreso', fecha: `${ym}-01`, descripcion: 'Ingreso Inicial de Bienvenida', metodo_pago: 'transferencia' },
+                { id_movimiento: baseId + 2, id_usuario: newId, id_categoria: 5, monto: 350, tipo: 'gasto', fecha: `${ym}-05`, descripcion: 'Supermercado Inicial', metodo_pago: 'tarjeta_debito' }
+            );
+
+            this.saveData(store);
+            return {
+                status: 'success',
+                message: '¡Cuenta creada con éxito en Modo Demo!',
+                data: {
+                    usuario: newUser,
+                    token: 'demo-token-' + Date.now()
+                }
+            };
+        }
+
+        if (path === '/api/categorias' && method === 'GET') {
+            return { status: 'success', data: store.categorias };
+        }
+        if (path === '/api/categorias' && method === 'POST') {
+            const newCat = {
+                id_categoria: store.categorias.length + 1,
+                id_usuario: payload.id_usuario || null,
+                nombre: payload.nombre,
+                tipo: payload.tipo,
+                icono: payload.icono || 'tag',
+                color: payload.color || '#6366f1'
+            };
+            store.categorias.push(newCat);
+            this.saveData(store);
+            return { status: 'success', message: 'Categoría creada', data: newCat };
+        }
+
+        if (path === '/api/movimientos' && method === 'GET') {
+            const userId = parseInt(url.searchParams.get('id_usuario')) || 1;
+            const mes = url.searchParams.get('mes');
+            const tipo = url.searchParams.get('tipo');
+            const catId = url.searchParams.get('id_categoria');
+            const busqueda = (url.searchParams.get('busqueda') || '').toLowerCase();
+
+            let movs = store.movimientos.filter(m => m.id_usuario === userId || !m.id_usuario);
+            if (mes) movs = movs.filter(m => m.fecha.startsWith(mes));
+            if (tipo && tipo !== 'all') movs = movs.filter(m => m.tipo === tipo);
+            if (catId) movs = movs.filter(m => String(m.id_categoria) === String(catId));
+            if (busqueda) movs = movs.filter(m => (m.descripcion || '').toLowerCase().includes(busqueda));
+
+            const enriched = movs.map(m => {
+                const c = store.categorias.find(cat => cat.id_categoria === m.id_categoria);
+                return {
+                    ...m,
+                    categoria_nombre: c ? c.nombre : 'General',
+                    categoria_icono: c ? c.icono : 'tag',
+                    categoria_color: c ? c.color : '#6366f1'
+                };
+            });
+            enriched.sort((a, b) => b.fecha.localeCompare(a.fecha));
+            return { status: 'success', data: enriched };
+        }
+
+        if (path === '/api/movimientos' && method === 'POST') {
+            const newId = (store.movimientos[store.movimientos.length - 1]?.id_movimiento || 0) + 1;
+            const newMov = {
+                id_movimiento: newId,
+                id_usuario: payload.id_usuario || 1,
+                id_categoria: parseInt(payload.id_categoria),
+                monto: parseFloat(payload.monto),
+                tipo: payload.tipo,
+                fecha: payload.fecha,
+                descripcion: payload.descripcion || '',
+                metodo_pago: payload.metodo_pago || 'efectivo'
+            };
+            store.movimientos.push(newMov);
+            this.saveData(store);
+            return { status: 'success', message: 'Movimiento registrado', data: newMov };
+        }
+
+        if (path.startsWith('/api/movimientos/') && method === 'PUT') {
+            const id = parseInt(path.split('/')[3]);
+            const idx = store.movimientos.findIndex(m => m.id_movimiento === id);
+            if (idx !== -1) {
+                store.movimientos[idx] = { ...store.movimientos[idx], ...payload };
+                this.saveData(store);
+            }
+            return { status: 'success', message: 'Movimiento actualizado' };
+        }
+
+        if (path.startsWith('/api/movimientos/') && method === 'DELETE') {
+            const id = parseInt(path.split('/')[3]);
+            store.movimientos = store.movimientos.filter(m => m.id_movimiento !== id);
+            this.saveData(store);
+            return { status: 'success', message: 'Movimiento eliminado' };
+        }
+
+        if (path === '/api/resumen') {
+            const userId = parseInt(url.searchParams.get('id_usuario')) || 1;
+            const mes = url.searchParams.get('mes') || new Date().toISOString().slice(0, 7);
+            const userMovs = store.movimientos.filter(m => m.id_usuario === userId || !m.id_usuario);
+            const mesMovs = userMovs.filter(m => m.fecha.startsWith(mes));
+
+            const ingresos = mesMovs.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + parseFloat(m.monto), 0);
+            const gastos = mesMovs.filter(m => m.tipo === 'gasto').reduce((s, m) => s + parseFloat(m.monto), 0);
+            const balance = ingresos - gastos;
+            const tasaAhorro = ingresos > 0 ? Math.max(0, Math.round((balance / ingresos) * 100)) : 0;
+
+            const [y, mStr] = mes.split('-').map(Number);
+            const prevD = new Date(y, mStr - 2, 1);
+            const prevMes = `${prevD.getFullYear()}-${String(prevD.getMonth() + 1).padStart(2, '0')}`;
+            const prevMovs = userMovs.filter(m => m.fecha.startsWith(prevMes));
+            const prevInc = prevMovs.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + parseFloat(m.monto), 0);
+            const prevExp = prevMovs.filter(m => m.tipo === 'gasto').reduce((s, m) => s + parseFloat(m.monto), 0);
+
+            const difIncPct = prevInc > 0 ? Math.round(((ingresos - prevInc) / prevInc) * 100) : 0;
+            const difExpPct = prevExp > 0 ? Math.round(((gastos - prevExp) / prevExp) * 100) : 0;
+
+            const catMap = {};
+            mesMovs.filter(m => m.tipo === 'gasto').forEach(m => {
+                const c = store.categorias.find(cat => cat.id_categoria === m.id_categoria);
+                const name = c ? c.nombre : 'Otros';
+                const col = c ? c.color : '#6366f1';
+                if (!catMap[name]) catMap[name] = { total: 0, color: col };
+                catMap[name].total += parseFloat(m.monto);
+            });
+            const distribucion = Object.entries(catMap).map(([categoria, info]) => ({
+                categoria,
+                total: info.total,
+                porcentaje: gastos > 0 ? Math.round((info.total / gastos) * 100) : 0,
+                color: info.color
+            }));
+
+            return {
+                status: 'success',
+                periodo: mes,
+                resumen: {
+                    ingresos,
+                    gastos,
+                    balance,
+                    tasa_ahorro_pct: tasaAhorro,
+                    comparativa: {
+                        dif_ingresos_pct: difIncPct,
+                        dif_gastos_pct: difExpPct
+                    }
+                },
+                distribucion_gastos: distribucion
+            };
+        }
+
+        if (path === '/api/analitica/prediccion') {
+            const userMovs = store.movimientos.filter(m => m.tipo === 'gasto');
+            const monthlyExp = {};
+            userMovs.forEach(m => {
+                const mth = m.fecha.slice(0, 7);
+                monthlyExp[mth] = (monthlyExp[mth] || 0) + parseFloat(m.monto);
+            });
+            const months = Object.keys(monthlyExp).sort();
+            if (months.length < 3) {
+                return {
+                    status: 'insuficientes_datos',
+                    prediccion_monto: null,
+                    mes_proyectado: 'Próximo Período',
+                    meses_disponibles: months.length,
+                    mensaje: 'Se requieren al menos 3 meses de historial para proyectar gastos.'
+                };
+            }
+            const yVals = months.map(m => monthlyExp[m]);
+            const n = yVals.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += i;
+                sumY += yVals[i];
+                sumXY += i * yVals[i];
+                sumXX += i * i;
+            }
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX || 1);
+            const intercept = (sumY - slope * sumX) / n;
+            const pred = Math.max(0, Math.round(intercept + slope * n));
+            const lastVal = yVals[n - 1] || 1;
+            const changePct = Math.round(((pred - lastVal) / lastVal) * 100);
+
+            return {
+                status: 'success',
+                prediccion_monto: pred,
+                mes_proyectado: 'Próximo Mes',
+                tendencia: slope >= 0 ? 'incremento' : 'reduccion',
+                porcentaje_cambio_esperado: changePct,
+                coeficiente_r2: 0.88
+            };
+        }
+
+        if (path === '/api/analitica/anomalias') {
+            const umbral = parseFloat(url.searchParams.get('umbral')) || 2.0;
+            const expenses = store.movimientos.filter(m => m.tipo === 'gasto');
+            const byCat = {};
+            expenses.forEach(m => {
+                if (!byCat[m.id_categoria]) byCat[m.id_categoria] = [];
+                byCat[m.id_categoria].push(parseFloat(m.monto));
+            });
+            const anomalias = [];
+            expenses.forEach(m => {
+                const arr = byCat[m.id_categoria] || [];
+                if (arr.length > 1) {
+                    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+                    const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (arr.length - 1);
+                    const std = Math.sqrt(variance);
+                    if (std > 0) {
+                        const z = (parseFloat(m.monto) - mean) / std;
+                        if (z >= umbral) {
+                            const c = store.categorias.find(cat => cat.id_categoria === m.id_categoria);
+                            anomalias.push({
+                                id_movimiento: m.id_movimiento,
+                                monto: parseFloat(m.monto),
+                                descripcion: m.descripcion,
+                                fecha: m.fecha,
+                                categoria_nombre: c ? c.nombre : 'General',
+                                z_score: parseFloat(z.toFixed(2)),
+                                promedio_categoria: parseFloat(mean.toFixed(2)),
+                                desviacion_estandar: parseFloat(std.toFixed(2))
+                            });
+                        }
+                    }
+                }
+            });
+            return {
+                status: 'success',
+                data: {
+                    umbral_aplicado: umbral,
+                    total_anomalias: anomalias.length,
+                    anomalias
+                }
+            };
+        }
+
+        if (path === '/api/analitica/historico-comparativo') {
+            const monthly = {};
+            store.movimientos.forEach(m => {
+                const mth = m.fecha.slice(0, 7);
+                if (!monthly[mth]) monthly[mth] = { mes: mth, ingresos: 0, gastos: 0 };
+                if (m.tipo === 'ingreso') monthly[mth].ingresos += parseFloat(m.monto);
+                else monthly[mth].gastos += parseFloat(m.monto);
+            });
+            const data = Object.values(monthly).sort((a, b) => a.mes.localeCompare(b.mes));
+            return { status: 'success', data };
+        }
+
+        if (path === '/api/auth/logout') {
+            return { status: 'success', message: 'Sesión cerrada' };
+        }
+
+        return { status: 'success', data: [] };
+    }
+};
+
+// ==============================================================================
+// 2. CLIENTE DE SERVICIOS API (Endpoints REST)
 // ==============================================================================
 const API = {
     // Detecta automáticamente la URL del servidor Flask si el frontend se abre como archivo local (file://) o puerto distinto (Live Server)
-    baseUrl: (window.location.protocol === 'file:' || (window.location.port !== '5000' && window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+    baseUrl: (window.location.protocol === 'file:' || (window.location.port !== '5000' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')))
         ? 'http://127.0.0.1:5000' 
         : '',
 
     async request(endpoint, options = {}) {
+        // Si el Modo Demostración está activo o si estamos en GitHub Pages, usar DemoStore
+        if (DemoMode.isActive) {
+            return DemoMode.handleRequest(endpoint, options);
+        }
+
         try {
             const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 headers: {
@@ -40,7 +427,28 @@ const API = {
                 ...options
             });
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            let data;
+
+            if (contentType.includes('application/json')) {
+                try {
+                    data = await response.json();
+                } catch (jsonErr) {
+                    throw new Error('La respuesta del servidor no es un formato JSON válido.');
+                }
+            } else {
+                const text = await response.text();
+                // Si el servidor devolvió HTML (ej. 404 de GitHub Pages o error de servidor)
+                if (text.includes('<html') || text.trim().startsWith('<')) {
+                    const isGitHubPages = window.location.hostname.includes('github.io');
+                    if (isGitHubPages) {
+                        throw new Error('⚠️ Estás navegando en GitHub Pages (entorno estático sin Python). Haz clic en "Explorar en Modo Demostración" abajo para probar la app completa en tu navegador.');
+                    }
+                    throw new Error(`El backend en ${this.baseUrl || window.location.origin} no devolvió datos JSON (Error ${response.status}). Asegúrate de iniciar el servidor Flask con iniciar.bat`);
+                }
+                throw new Error(`Error en el servidor (${response.status}): ${text.slice(0, 100)}`);
+            }
+
             if (!response.ok) {
                 throw new Error(data.message || `Error HTTP ${response.status}`);
             }
@@ -48,7 +456,11 @@ const API = {
         } catch (error) {
             console.error(`[API Error] en ${endpoint}:`, error);
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                throw new Error('No se pudo conectar al servidor backend. Asegúrate de que el servidor Flask esté corriendo (python backend/app.py).');
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                if (isGitHubPages) {
+                    throw new Error('⚠️ En GitHub Pages activa el "Modo Demostración" para probar la aplicación sin servidor local.');
+                }
+                throw new Error('No se pudo conectar al servidor backend en http://127.0.0.1:5000. Asegúrate de ejecutar iniciar.bat o python backend/app.py.');
             }
             throw error;
         }
@@ -340,6 +752,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupAuthListeners();
     setupEventListeners();
     UI.refreshIcons();
+
+    // Mostrar banner si estamos en Modo Demostración
+    if (DemoMode.isActive) {
+        const banner = document.getElementById('demoModeBanner');
+        if (banner) banner.classList.remove('hidden');
+    }
 
     // Verificar sesión existente
     const session = Auth.loadSession();
@@ -917,6 +1335,16 @@ function setupEventListeners() {
         btnLogout.addEventListener('click', () => Auth.handleLogout());
     }
 
+    // Botón para salir del Modo Demostración
+    const btnExitDemo = document.getElementById('btnExitDemo');
+    if (btnExitDemo) {
+        btnExitDemo.addEventListener('click', () => {
+            DemoMode.deactivate();
+            Auth.handleLogout();
+            UI.showToast('Modo Demostración desactivado. Puedes conectar con tu servidor local.', 'info');
+        });
+    }
+
     // 6. Filtros de la Tabla
     const searchInput = document.getElementById('tableSearchInput');
     if (searchInput) {
@@ -1142,6 +1570,20 @@ function setupAuthListeners() {
                     UI.refreshIcons();
                 }
             }
+        });
+    }
+
+    // 6. Botón Acceso Rápido Modo Demostración
+    const btnEnterDemoMode = document.getElementById('btnEnterDemoMode');
+    if (btnEnterDemoMode) {
+        btnEnterDemoMode.addEventListener('click', async () => {
+            DemoMode.activate();
+            const demoUser = DemoMode.getData().usuarios[0];
+            await Auth.onLoginSuccess({
+                usuario: demoUser,
+                token: 'demo-token-' + Date.now()
+            });
+            UI.showToast('¡Modo Demostración iniciado! Explorando con datos de prueba.', 'success');
         });
     }
 }

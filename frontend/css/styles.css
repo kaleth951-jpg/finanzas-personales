@@ -1689,3 +1689,99 @@ body {
     }
 }
 
+/* ==============================================================================
+   MODO DEMOSTRACIÓN (GitHub Pages / Sin Servidor)
+   ============================================================================== */
+.auth-demo-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 24px 14px;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-demo-divider::before,
+.auth-demo-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auth-demo-divider span {
+    padding: 0 10px;
+}
+
+.btn-demo-mode {
+    margin: 0 24px 24px;
+    width: calc(100% - 48px);
+    padding: 12px 18px;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-sm);
+    color: #a5b4fc;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all var(--transition-fast);
+}
+
+.btn-demo-mode:hover {
+    background: rgba(99, 102, 241, 0.22);
+    border-color: rgba(99, 102, 241, 0.5);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-demo-mode i {
+    width: 16px;
+    height: 16px;
+    color: #c084fc;
+}
+
+.demo-banner {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    z-index: 50;
+    position: relative;
+}
+
+.demo-banner code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #a5f3fc;
+    font-family: monospace;
+}
+
+.demo-banner .btn-exit-demo {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ffffff;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.demo-banner .btn-exit-demo:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+

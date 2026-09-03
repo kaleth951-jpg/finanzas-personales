@@ -11,9 +11,8 @@ from modelos.database import test_connection
 from rutas import bp_usuarios, bp_categorias, bp_movimientos, bp_analitica, bp_auth
 
 def create_app() -> Flask:
-    # Ruta estática hacia la carpeta frontend para servir opcionalmente todo integrado
     frontend_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
-    app = Flask(__name__, static_folder=frontend_folder, static_url_path="")
+    app = Flask(__name__, static_folder=None)
     
     # Habilitar CORS para permitir peticiones desde cualquier origen (útil en desarrollo)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -25,7 +24,7 @@ def create_app() -> Flask:
     app.register_blueprint(bp_movimientos)
     app.register_blueprint(bp_analitica)
 
-    # Ruta raíz: sirve la aplicación frontend si existe, o información de la API
+    # Ruta raíz y rutas de acceso al frontend
     @app.route("/", methods=["GET"])
     def index():
         index_path = os.path.join(frontend_folder, "index.html")
@@ -34,28 +33,28 @@ def create_app() -> Flask:
         return jsonify({
             "nombre": "Fiskal - API de Finanzas Personales con Dashboard Analítico",
             "version": "1.0.0",
-            "estado": "activo",
-            "documentacion_endpoints": [
-                "/api/auth/register",
-                "/api/auth/login",
-                "/api/auth/me",
-                "/api/auth/logout",
-                "/api/usuarios",
-                "/api/categorias",
-                "/api/movimientos",
-                "/api/resumen",
-                "/api/analitica/prediccion",
-                "/api/analitica/anomalias",
-                "/api/analitica/historico-comparativo"
-            ]
+            "estado": "activo"
         })
 
-    # Servir archivos estáticos del frontend (css, js, etc.)
-    @app.route("/<path:path>", methods=["GET"])
-    def static_proxy(path):
-        if os.path.exists(os.path.join(frontend_folder, path)):
-            return send_from_directory(frontend_folder, path)
-        return jsonify({"status": "error", "message": "Recurso no encontrado"}), 404
+    @app.route("/frontend", methods=["GET"])
+    @app.route("/frontend/", methods=["GET"])
+    def frontend_index():
+        return send_from_directory(frontend_folder, "index.html")
+
+    # Servir archivos estáticos del frontend (css, js, etc.) tanto con /frontend/ como directos
+    @app.route("/frontend/<path:filename>", methods=["GET"])
+    @app.route("/<path:filename>", methods=["GET"])
+    def serve_frontend_file(filename):
+        # No capturar rutas /api
+        if filename.startswith("api/") or filename == "api":
+            return jsonify({"status": "error", "message": "Ruta de API no encontrada"}), 404
+
+        file_path = os.path.join(frontend_folder, filename)
+        if os.path.isfile(file_path):
+            return send_from_directory(frontend_folder, filename)
+        elif os.path.isdir(file_path) and os.path.isfile(os.path.join(file_path, "index.html")):
+            return send_from_directory(file_path, "index.html")
+        return jsonify({"status": "error", "message": f"Recurso no encontrado: /{filename}"}), 404
 
     # Endpoint de salud del sistema
     @app.route("/api/health", methods=["GET"])
