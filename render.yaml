@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: fiskal-api
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && gunicorn app:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DB_ENGINE
+        value: sqlite  # NOTA: En la versión gratuita de Render, SQLite se borrará al reiniciar. Cámbialo a 'mysql' y llena las demás variables si usas una BD externa.
+      - key: DB_HOST
+        value: ""
+      - key: DB_USER
+        value: ""
+      - key: DB_PASSWORD
+        value: ""
+      - key: DB_NAME
+        value: "finanzas_db"
