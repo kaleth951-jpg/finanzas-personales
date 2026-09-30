@@ -161,9 +161,10 @@ def get_db_connection():
                 charset="utf8mb4",
                 cursorclass=driver.cursors.DictCursor,
                 autocommit=False,
-                connect_timeout=1
+                connect_timeout=5
             )
             _MYSQL_AVAILABLE = True
+            _init_mysql_if_needed(conn)
             return ("mysql", conn)
         except Exception:
             _MYSQL_AVAILABLE = False
@@ -375,6 +376,65 @@ def _init_sqlite_if_needed(conn: sqlite3.Connection):
         except Exception:
             pass
 
+    cursor.close()
+
+def _init_mysql_if_needed(conn):
+    """Inicializa automáticamente las tablas en MySQL si no existen."""
+    cursor = conn.cursor()
+    cursor.execute("SHOW TABLES LIKE 'usuarios'")
+    if not cursor.fetchone():
+        default_hash = hash_password("password123")
+        schema_sql = f"""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+            nombre VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL DEFAULT '',
+            moneda VARCHAR(10) NOT NULL DEFAULT 'USD',
+            fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS categorias (
+            id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+            id_usuario INT NULL,
+            nombre VARCHAR(255) NOT NULL,
+            tipo ENUM('ingreso', 'gasto') NOT NULL,
+            icono VARCHAR(50) DEFAULT 'tag',
+            color VARCHAR(20) DEFAULT '#6366f1',
+            fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS ingresos_gastos (
+            id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+            id_usuario INT NOT NULL,
+            id_categoria INT NOT NULL,
+            monto DECIMAL(10,2) NOT NULL CHECK (monto > 0),
+            tipo ENUM('ingreso', 'gasto') NOT NULL,
+            fecha DATE NOT NULL,
+            descripcion VARCHAR(255) NOT NULL,
+            metodo_pago VARCHAR(50) NOT NULL DEFAULT 'efectivo',
+            fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+            FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria) ON DELETE RESTRICT
+        );
+        """
+        # MySQL no soporta executescript nativo en pymysql, ejecutamos por bloques
+        for statement in schema_sql.split(';'):
+            if statement.strip():
+                cursor.execute(statement)
+
+        # Semilla básica de prueba en MySQL
+        seed_sql = [
+            f"INSERT IGNORE INTO usuarios (id_usuario, nombre, email, password_hash, moneda) VALUES (1, 'Kaleth García', 'kaleth@example.com', '{default_hash}', 'USD')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (1, NULL, 'Salario Principal', 'ingreso', 'briefcase', '#10b981')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (5, NULL, 'Alimentación & Supermercado', 'gasto', 'shopping-cart', '#f59e0b')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (6, NULL, 'Vivienda & Servicios', 'gasto', 'home', '#3b82f6')"
+        ]
+        for statement in seed_sql:
+            cursor.execute(statement)
+            
+        conn.commit()
     cursor.close()
 
 
