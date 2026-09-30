@@ -428,8 +428,16 @@ def _init_mysql_if_needed(conn):
         seed_sql = [
             f"INSERT IGNORE INTO usuarios (id_usuario, nombre, email, password_hash, moneda) VALUES (1, 'Kaleth García', 'kaleth@example.com', '{default_hash}', 'USD')",
             "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (1, NULL, 'Salario Principal', 'ingreso', 'briefcase', '#10b981')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (2, NULL, 'Freelance & Consultoría', 'ingreso', 'laptop', '#06b6d4')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (3, NULL, 'Inversiones & Dividendos', 'ingreso', 'trending-up', '#8b5cf6')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (4, NULL, 'Otros Ingresos', 'ingreso', 'plus-circle', '#14b8a6')",
             "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (5, NULL, 'Alimentación & Supermercado', 'gasto', 'shopping-cart', '#f59e0b')",
-            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (6, NULL, 'Vivienda & Servicios', 'gasto', 'home', '#3b82f6')"
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (6, NULL, 'Vivienda & Servicios', 'gasto', 'home', '#3b82f6')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (7, NULL, 'Transporte & Combustible', 'gasto', 'car', '#6366f1')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (8, NULL, 'Ocio & Entretenimiento', 'gasto', 'film', '#ec4899')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (9, NULL, 'Salud & Medicamentos', 'gasto', 'heart-pulse', '#ef4444')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (10, NULL, 'Educación & Cursos', 'gasto', 'book-open', '#84cc16')",
+            "INSERT IGNORE INTO categorias (id_categoria, id_usuario, nombre, tipo, icono, color) VALUES (11, NULL, 'Tecnología & Gadgets', 'gasto', 'cpu', '#a855f7')"
         ]
         for statement in seed_sql:
             cursor.execute(statement)
@@ -470,7 +478,7 @@ def execute_query(
             return None
         else:
             # SQLite: Reemplaza marcadores %s por ? para compatibilidad
-            sqlite_query = query.replace("%s", "?")
+            sqlite_query = query.replace("%s", "?").replace("%%", "%")
             cursor = conn.cursor()
             cursor.execute(sqlite_query, params or ())
             if commit:

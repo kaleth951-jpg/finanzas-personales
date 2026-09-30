@@ -39,7 +39,7 @@ def listar_movimientos():
         if mes:
             # Si mes viene como YYYY-MM
             if len(mes) == 7 and "-" in mes:
-                filtros.append("DATE_FORMAT(m.fecha, '%Y-%m') = %s")
+                filtros.append("DATE_FORMAT(m.fecha, '%%Y-%%m') = %s")
                 params.append(mes)
             else:
                 filtros.append("MONTH(m.fecha) = %s")
@@ -280,7 +280,7 @@ def obtener_resumen_financiero():
 
         # Si no se envía mes, seleccionar el mes más reciente con datos o el actual
         if not mes_filtro:
-            sql_latest = "SELECT DATE_FORMAT(MAX(fecha), '%Y-%m') AS max_mes FROM ingresos_gastos WHERE id_usuario = %s"
+            sql_latest = "SELECT DATE_FORMAT(MAX(fecha), '%%Y-%%m') AS max_mes FROM ingresos_gastos WHERE id_usuario = %s"
             latest_res = execute_query(sql_latest, (id_u,), fetch_one=True)
             if latest_res and latest_res.get("max_mes"):
                 mes_filtro = latest_res["max_mes"]
@@ -293,7 +293,7 @@ def obtener_resumen_financiero():
             tipo, 
             COALESCE(SUM(monto), 0) AS total 
         FROM ingresos_gastos 
-        WHERE id_usuario = %s AND DATE_FORMAT(fecha, '%Y-%m') = %s 
+        WHERE id_usuario = %s AND DATE_FORMAT(fecha, '%%Y-%%m') = %s 
         GROUP BY tipo
         """
         totales_rows = execute_query(sql_totales, (id_u, mes_filtro), fetch_all=True)
@@ -314,7 +314,7 @@ def obtener_resumen_financiero():
         INNER JOIN categorias c ON m.id_categoria = c.id_categoria
         WHERE m.id_usuario = %s 
           AND m.tipo = 'gasto' 
-          AND DATE_FORMAT(m.fecha, '%Y-%m') = %s
+          AND DATE_FORMAT(m.fecha, '%%Y-%%m') = %s
         GROUP BY c.id_categoria, c.nombre, c.color, c.icono
         ORDER BY total DESC
         """
